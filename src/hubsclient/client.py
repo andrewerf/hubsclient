@@ -39,9 +39,7 @@ class MSG:
 
         :return: JSON string
         """
-        return json.dumps(
-            [str(self.ch), str(self.id), self.target, self.cmd, self.data]
-        )
+        return json.dumps([str(self.ch), str(self.id), self.target, self.cmd, self.data])
 
     __str__ = to_json
 
@@ -54,8 +52,8 @@ class HubsClient:
         avatar_id: str = None,
         display_name: str = "API Client",
     ):
-        """
-        Hubs room client.
+        """Hubs room client.
+
         :param host: The host of the room, e.g. "hubs.mozilla.com"
         :param room_id: The hub room ID code
         :param avatar_id: The avatar ID
@@ -91,10 +89,10 @@ class HubsClient:
         :param body: Payload body
         """
         self.send_cmd(8, f"hub:{self.roomID}", cmd, body)
-    
+
     def sendHeartbeat(self):
         """Send a heartbeat."""
-        self.send_cmd(0, "phoenix", "heartbeat", {})
+        self.send_cmd(None, "phoenix", "heartbeat", {})
 
     def _join(self):
         self.sock = ws_connect(self.url)
@@ -116,6 +114,7 @@ class HubsClient:
                 "hub_invite_id": None,
             },
         )
+        self.sessinfo = MSG.from_json(self.sock.recv()).body["response"]
         # enter room
         self.send8(
             "events:entered",
