@@ -89,6 +89,13 @@ class HubsClient:
         """
         self.send8("naf", {"dataType": "u", "data": naf.to_obj()})
 
+    def send_chat(self, message: str):
+        """Send a chat message.
+
+        :param message: Message to send
+        """
+        self.send8("message", {"body": message, "type": "chat"})
+
     def get_message(self, wait: bool = False) -> MSG:
         """Get a message from the socket.
 
