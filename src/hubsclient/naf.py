@@ -1,34 +1,25 @@
-import json
 import time
+from .utils import typed_dataclass, field, gen_uuid
 
 
+@typed_dataclass
 class NAF:
-    def __init__(
-        self,
-        network_id,
-        owner_id,
-        creator_id=None,
-        template=None,
-        persistent=False,
-        parent=None,
-        components=[],
-    ):
-        self.network_id = network_id
-        self.owner_id = owner_id
-        self.creator_id = creator_id or owner_id
-        self.last_owner_time = time.time()
-        self.template = template
-        self.persistent = persistent
-        self.parent = parent
-        self.components = components
-        self.is_first_sync = True
+    network_id: str = field(default_factory=gen_uuid)
+    owner_id: str | None = None
+    creator_id: str | None = None
+    last_owner_time: float = field(default_factory=time.time)
+    template: str | None = None
+    persistent: bool = False
+    parent: str | None = None
+    components: list = field(default_factory=list)
+    is_first_sync: bool = True
 
-    def to_json(self):
+    def to_obj(self):
         self.last_owner_time = time.time()
         data = {
             "networkId": self.network_id,
-            "owner": self.owner_id,
-            "creator": self.creator_id,
+            "owner": self.owner_id or self.creator_id,
+            "creator": self.creator_id or self.owner_id,
             "lastOwnerTime": self.last_owner_time,
             "template": self.template,
             "persistent": self.persistent,
@@ -37,4 +28,19 @@ class NAF:
             "isFirstSync": self.is_first_sync,
         }
         self.is_first_sync = False
-        return json.dumps(data)
+        return data
+
+    @classmethod
+    def from_obj(cls, data):
+        obj = cls(
+            network_id=data["networkId"],
+            owner_id=data["owner"],
+            creator_id=data["creator"],
+            parent=data["parent"],
+            template=data["template"],
+            persistent=data["persistent"],
+        )
+        obj.last_owner_time = data["lastOwnerTime"]
+        obj.components = data["components"]
+        obj.is_first_sync = data["isFirstSync"]
+        return obj
