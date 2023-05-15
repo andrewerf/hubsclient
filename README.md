@@ -2,6 +2,19 @@
 
 Python client for [Hubs Cloud](https://hubs.mozilla.com/).
 
+## Introduction
+
+Installation:
+
+```
+pip install git+https://github.com/simvia/hubsclient.git
+```
+
+To get started, see the [quickstart](https://hubsclient.readthedocs.io/quickstart).
+
+Read the docs at
+[https://hubsclient.readthedocs.io](https://hubsclient.readthedocs.io).
+
 ## Features
 
 Room interface:

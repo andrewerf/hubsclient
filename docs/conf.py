@@ -11,16 +11,14 @@ copyright = "2023, Simvia Technologies"
 author = "Simvia Technologies"
 release = "0.0.1"
 
-# -- Path setup --------------------------------------------------------------
-# https://www.sphinx-doc.org/en/master/usage/configuration.html#path-setup
-import os
-import sys
-sys.path.insert(0, os.path.abspath('../src'))
-
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
-extensions = ["sphinx.ext.autodoc", "sphinx.ext.napoleon", "sphinx.ext.viewcode"]
+extensions = ["autodoc2", "myst_parser", "sphinx.ext.napoleon", "sphinx.ext.viewcode"]
+
+autodoc2_packages = ["../src/hubsclient"]
+
+autodoc2_skip_module_regexes = [r"hubsclient.__about__"]
 
 templates_path = ["_templates"]
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
@@ -29,5 +27,5 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
-html_theme = "sphinx_rtd_theme"
+html_theme = "furo"
 html_static_path = ["_static"]
