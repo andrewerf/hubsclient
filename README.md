@@ -28,6 +28,9 @@ API interface:
 
 ## License
 
+This package is developed by [Simvia](https://simvia.ai) and open source
+contributors. The code is licensed under the AGPL-3.0 license.
+
 ```
 Copyright (C) 2023  Simvia Technologies LLC
 
@@ -44,3 +47,10 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ```
+
+Hubs and Hubs Cloud are projects by [Mozilla](https://mozilla.org). The authors of
+this package are in no way affiliated with Mozilla or any of its products.
+
+Mozilla, Hubs, and Hubs Cloud are trademarks of Mozilla.
+
+Simvia is a trademark of Simvia Technologies LLC.
