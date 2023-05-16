@@ -100,3 +100,5 @@ class Rotation:
 
     def to_obj(self):
         return {"x": self.x, "y": self.y, "z": self.z}
+
+inf = float('inf')

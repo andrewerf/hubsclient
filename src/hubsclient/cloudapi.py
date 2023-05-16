@@ -3,7 +3,7 @@ from gql import Client, gql
 from gql.transport.requests import RequestsHTTPTransport
 import requests
 import json
-from .utils import typed_dataclass
+from .utils import typed_dataclass, inf
 
 
 @typed_dataclass
@@ -137,20 +137,21 @@ class CloudAPI:
         type: Literal["rooms", "scene_listings", "avatar_listings", "scenes", "avatars", "favorites", "assets"],
         query: str = None,
         _parser: Callable[[dict], Any] | None = None,
+        page_limit = None,
         **kwargs,
     ):
         entries = []
         cursor = 1
-        while cursor:
+        while (cursor or inf) < (page_limit or inf) + 1:
             resp = self._v1api_query(
-                "media/search", params={"source": type, "q": query, "user": self.user_id, cursor: cursor, **kwargs}
+                "media/search", params={"source": type, "q": query, "user": self.user_id, "cursor": cursor, **kwargs}
             ).json(object_hook=_parser)
             cursor = resp["meta"]["next_cursor"]
             entries.extend(resp["entries"])
         return entries
 
-    def get_public_rooms(self):
-        return self.media_search("rooms", filter="public", _parser=RoomInfo.from_obj)
+    def get_public_rooms(self, **kwargs):
+        return self.media_search("rooms", filter="public", _parser=RoomInfo.from_obj, **kwargs)
 
-    def get_avatars(self):
-        return self.media_search("avatar_listings", _parser=AvatarInfo.from_obj)
+    def get_avatars(self, **kwargs):
+        return self.media_search("avatar_listings", _parser=AvatarInfo.from_obj, **kwargs)
