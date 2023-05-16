@@ -57,7 +57,7 @@ class HubsClient:
         self.display_name = display_name
         self.avatar_id = avatar_id
         self.sid: str = None
-        avatar_url = avatar_id if avatar_id.startswith("http") else f"https://{host}/api/v1/avatar/{avatar_id}/base.gltf"
+        avatar_url = avatar_id if avatar_id.startswith("http") else f"https://{host}/api/v1/avatars/{avatar_id}/avatar.gltf"
         self.avatar = Avatar(avatar_url=avatar_url)
         self.msg_buf: list[MSG] = []
         self._join()
