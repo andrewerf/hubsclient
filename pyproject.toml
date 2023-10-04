@@ -7,7 +7,7 @@ name = "hubsclient"
 dynamic = ["version"]
 description = 'Python Interface and Client for Hubs Cloud'
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.10"
 license = "AGPL-3.0-or-later"
 keywords = []
 authors = [
@@ -17,7 +17,7 @@ authors = [
 classifiers = [
     "Development Status :: 4 - Beta",
     "Programming Language :: Python",
-    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.10",
 ]
 dependencies = [
     "websockets>=11.0.0",
