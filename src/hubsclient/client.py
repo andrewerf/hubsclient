@@ -1,4 +1,4 @@
-from websockets.sync.client import ClientConnection, connect as ws_connect
+from websockets.client import WebSocketClientProtocol, connect as ws_connect
 import json
 from .avatar import Avatar
 from .naf import NAF
@@ -51,7 +51,7 @@ class HubsClient:
         """
         self.host = host
         self.url = f"wss://{host}/socket/websocket?vsn=2.0.0"
-        self.sock: ClientConnection = None
+        self.sock: WebSocketClientProtocol = None
         self.mix: dict[int, int] = {}
         self.room_id = room_id
         self.display_name = display_name
@@ -60,9 +60,8 @@ class HubsClient:
         avatar_url = avatar_id if avatar_id.startswith("http") else f"https://{host}/api/v1/avatars/{avatar_id}/avatar.gltf"
         self.avatar = Avatar(avatar_url=avatar_url)
         self.msg_buf: list[MSG] = []
-        self._join()
 
-    def send_cmd(self, ch, tgt, cmd, body):
+    async def send_cmd(self, ch, tgt, cmd, body):
         """Send a command to a channel.
 
         :param ch: Channel number
@@ -73,7 +72,7 @@ class HubsClient:
         # increment message index
         # hack to get around null, null
         self.mix[ch] = ch and (self.mix.get(ch, ch - 1) + 1)
-        self.sock.send(MSG(ch, self.mix[ch], tgt, cmd, body).to_json())
+        return await self.sock.send(MSG(ch, self.mix[ch], tgt, cmd, body).to_json())
 
     def send8(self, cmd: str, body: dict):
         """Send a command on channel 8, resource update.
@@ -81,52 +80,49 @@ class HubsClient:
         :param cmd: Command
         :param body: Payload body
         """
-        self.send_cmd(8, f"hub:{self.room_id}", cmd, body)
+        return self.send_cmd(8, f"hub:{self.room_id}", cmd, body)
 
-    def send_naf(self, naf: NAF):
+    async def send_naf(self, naf: NAF):
         """Send a NAF update.
 
         :param naf: NAF object
         """
-        self.send8("naf", {"dataType": "u", "data": naf.to_obj()})
+        return await self.send8("naf", {"dataType": "u", "data": naf.to_obj()})
 
-    def send_chat(self, message: str):
+    async def send_chat(self, message: str):
         """Send a chat message.
 
         :param message: Message to send
         """
-        self.send8("message", {"body": message, "type": "chat"})
+        return await self.send8("message", {"body": message, "type": "chat"})
 
-    def get_message(self, wait: bool = False) -> MSG:
+    async def get_message(self) -> MSG:
         """Get a message from the socket.
 
-        :param wait: Whether to block until a message is received
         :return: MSG
         """
         try:
-            msg = self.sock.recv(None if wait else 0)
+            msg = await self.sock.recv()
             msg = MSG.from_json(msg)
             self.msg_buf.append(msg)
             return msg
         except TimeoutError:
             return None
 
-    def sync(self):
-        while self.get_message():
-            ...
-        self.send_naf(self.avatar)
+    async def sync(self):
+        return await self.send_naf(self.avatar)
 
-    def send_heartbeat(self):
+    async def send_heartbeat(self):
         """Send a heartbeat."""
-        self.send_cmd(None, "phoenix", "heartbeat", {})
+        return await self.send_cmd(None, "phoenix", "heartbeat", {})
 
-    def _join(self):
-        self.sock = ws_connect(self.url)
+    async def join(self):
+        self.sock = await ws_connect(self.url)
         # send first join msg
-        self.send_cmd(5, "ret", "phx_join", {"hub_id": self.room_id})
-        self.sid = self.get_message(wait=True).data["response"]["session_id"]
+        await self.send_cmd(5, "ret", "phx_join", {"hub_id": self.room_id})
+        self.sid = (await self.get_message()).data["response"]["session_id"]
         # setup profile
-        self.send8(
+        await self.send8(
             "phx_join",
             {
                 "profile": {
@@ -140,9 +136,9 @@ class HubsClient:
                 "hub_invite_id": None,
             },
         )
-        self.sessinfo = self.get_message(wait=True).data["response"]
+        self.sessinfo = (await self.get_message()).data["response"]
         # enter room
-        self.send8(
+        await self.send8(
             "events:entered",
             {
                 "isNewDaily": False,
@@ -155,11 +151,11 @@ class HubsClient:
             },
         )
         self.avatar.owner_id = self.sid
-        self.sync()
+        await self.sync()
 
-    def close(self):
+    async def close(self):
         """Close the connection."""
-        self.sock.close()
+        await self.sock.close()
         self.sock = None
         self.sid = None
         self.msg_buf = []
